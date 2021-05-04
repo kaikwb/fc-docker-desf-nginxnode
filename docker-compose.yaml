@@ -1,0 +1,33 @@
+version: '3'
+
+services: 
+    db:
+        container_name: db
+        image: mysql
+        command: --default-authentication-plugin=mysql_native_password
+        restart: always
+        environment: 
+            MYSQL_ROOT_PASSWORD: 'root'
+            MYSQL_DATABASE: 'nodedb'
+        volumes: 
+            - ./db/scripts:/docker-entrypoint-initdb.d
+            - ./db/data:/var/lib/mysql
+
+    node:
+        container_name: node
+        build: ./node
+        ports:
+            - '3000:3000'
+        depends_on: 
+            - db
+
+    nginx:
+        container_name: nginx
+        image: nginx
+        ports:
+            - 8080:8080
+        volumes: 
+            - ./nginx:/etc/nginx/conf.d/
+        depends_on:
+            - db
+            - node
